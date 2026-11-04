@@ -1,0 +1,40 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Packaging and build outputs
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# IDE/editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Test and coverage artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+tests/tmp/
+
+# Local logs and temporary files
+*.log
+*.tmp
+*.working
+
+# User-generated FlatCAM/CNC project and output files
+*.FlatPrj
+*.flatprj
+*.gcode
+*.nc
+*.tap
