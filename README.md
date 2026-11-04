@@ -4,6 +4,8 @@
 
 Ez a repository a FlatCAM 8.994 forráskódját tartalmazza Tomi Bp által készített munkafolyamat- és kezelőfelületi fejlesztésekkel. Az eredeti FlatCAM-projektből indul ki, annak architektúráját és függőségeit megtartva.
 
+**A legfontosabb fejlesztés az NCC Tool-to-tool overlap kezelése**, amely a többszerszámos rézeltávolításnál átfedést biztosít az egymást követő szerszámok megmunkálási területei között. Ez segít megszüntetni a szerszámhatárokon visszamaradó vékony rézcsíkokat és sorját, javítja a felület folytonosságát, és csökkentheti az utólagos tisztításból vagy ismételt marásból eredő felesleges gépidőt.
+
 > **Állapot:** fejlesztői, még nem kiadott változat. A forráskód statikus ellenőrzéseken átesett, de a teljes grafikus felület és a CNC-munkafolyamat minden támogatott platformon még nincs végigtesztelve. Marás előtt mindig szimuláld és ellenőrizd a generált szerszámpályákat.
 
 ---
@@ -12,21 +14,26 @@ Ez a repository a FlatCAM 8.994 forráskódját tartalmazza Tomi Bp által kész
 
 ### A projektről
 
-A Tomi Bp Edition a FlatCAM BETA 8.994 közösségi módosításokkal továbbfejlesztett változata. Célja a NYÁK (PCB) gyártásához kapcsolódó CNC-munkafolyamatok kényelmesebbé és hatékonyabbá tétele, különös tekintettel az NCC (Non-Copper Clearing – rézmentes területek kimarása) eszközre, valamint az EAGLE-ből származó Excellon fúrófájlok kezelésére.
+A Tomi Bp Edition a FlatCAM BETA 8.994 közösségi módosításokkal továbbfejlesztett változata. Célja a NYÁK (PCB) gyártásához kapcsolódó CNC-munkafolyamatok hatékonyabbá és megbízhatóbbá tétele. **A projekt központi fejlesztése az NCC (Non-Copper Clearing – rézmentes területek kimarása) többszerszámos Tool-to-tool overlap funkciója.** Emellett kezelőfelületi fejlesztéseket és EAGLE Excellon koordinátakorrekciót is tartalmaz.
 
 Ez egy független, nem hivatalos közösségi kiadás. Nem áll kapcsolatban az eredeti FlatCAM fejlesztőivel, és azok nem vállalnak felelősséget az itt végzett módosításokért.
 
 ### Saját fejlesztések
 
-#### 1. Szerszámonkénti Tool-to-tool overlap profilok
+#### 1. NCC Tool-to-tool overlap – a kiadás fő fejlesztése
 
+A többszerszámos NCC megmunkálás egyik kritikus pontja a szerszámváltások közötti átmenet. Ha a kisebb szerszám csak pontosan addig dolgozik, ameddig az előző, nagyobb szerszám által kimart terület véget ér, a határon vékony, megmaradt rézcsík vagy sorja maradhat. A Tomi Bp Edition ezt a problémát kezeli a **Tool-to-tool overlap** funkcióval.
+
+- A kisebb, következő szerszám a beállított mértékben **ráfed az előző, nagyobb szerszám által már megtisztított területre**.
+- Az átfedés a szerszám szélességének százalékában állítható.
+- Ezzel csökkenthető a szerszámhatárokon visszamaradó réz, a sorjaképződés és az utólagos kézi tisztítás szükségessége.
+- A folyamatosabb átmenet megbízhatóbb, egyenletesebb rézeltávolítást tesz lehetővé.
+- A jól beállított többszerszámos munkamenet csökkentheti a hibásan tisztított részek miatti ismételt marást és a felesleges gépidőt.
 - Minden szerszámátmérőhöz külön **Tool-to-tool overlap** érték menthető.
 - Az alapértelmezett kezdeti átfedési érték 60%.
-- A mentés külön **Save tool-to-tool overlap** gombbal történik.
-- A szerszám kiválasztása vagy az értékmező átállítása önmagában nem írja felül a mentett profilokat.
-- Az egyes szerszámátmérőkhöz tartozó profilok egymástól függetlenek.
+- A mentés külön **Save tool-to-tool overlap** gombbal történik; a profilok átmérő szerint, egymástól függetlenül tárolódnak.
 
-Így nem kell minden alkalommal újra beállítani az adott maróhoz tartozó átfedési értéket.
+Ez a projekt elsődleges funkcionális fejlesztése: nem egyszerű kezelőfelületi kényelmi módosítás, hanem a többszerszámos NCC megmunkálás minőségét és hatékonyságát célzó változtatás. Az optimális átfedési érték a szerszámoktól, az anyagtól és a marási beállításoktól függ, ezért azt próbamunkával kell ellenőrizni.
 
 #### 2. Generate Geometry with All Tools
 
@@ -89,11 +96,21 @@ This repository contains the FlatCAM 8.994 source tree with additional workflow 
 
 > **Status:** Unreleased development edition. The source has received static checks, but a complete GUI/CNC workflow test has not yet been performed on every supported platform. Always simulate and inspect generated toolpaths before machining.
 
-### Highlights in this edition
+### Main improvement: NCC tool-to-tool overlap
+
+The central functional improvement in this edition is the **tool-to-tool overlap for multi-tool NCC (Non-Copper Clearing)**. When moving from a larger clearing tool to a smaller one, the next tool deliberately overlaps the area already cleared by the previous, larger tool. This overlap helps prevent thin copper ridges and burrs from being left along tool-boundary transitions, improves continuity between clearing regions, and can reduce avoidable machine time spent on re-clearing or remedial cleanup.
+
+- The overlap is configurable as a percentage of the current tool width.
+- A separate profile can be saved for each tool diameter.
+- The initial default overlap is 60%.
+- Saved profiles are reused for matching tool diameters.
+
+Correct overlap settings depend on the tool, material and machining parameters and should be validated with a test job.
+
+### Other improvements
 
 - **EAGLE 10× Excellon coordinate correction** — an Excellon-object checkbox applies a 0.1 coordinate scale to drill/slot positions while leaving tool diameters unchanged. It is enabled by default in the current source.
 - **NCC board perimeter** — optional perimeter geometry is appended to the largest NCC tool that actually cleared copper. The current implementation derives the perimeter from the convex hull of the selected NCC reference geometry and offsets it by half the selected tool diameter. It does not reproduce every concave board outline.
-- **NCC tool-to-tool overlap profiles** — overlap values can be saved per tool diameter in application defaults and reused when working with matching tools.
 - **Generate Geometry with All Tools** — an additional NCC action that runs the existing geometry-generation routine with every tool in the tool table, regardless of the current selection. Further real-world validation is still needed, especially with area selection and multi-tool jobs.
 - **NCC interface refinements** — layout and control improvements, including the board-perimeter option and explicit overlap-save control.
 - **EAGLE icon** — monochrome EAGLE mark used beside the Excellon coordinate-correction control.
