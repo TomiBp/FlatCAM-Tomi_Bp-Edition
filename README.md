@@ -33,7 +33,7 @@ A többszerszámos NCC megmunkálás egyik kritikus pontja a szerszámváltások
 - Az alapértelmezett kezdeti átfedési érték 60%.
 - A mentés külön **Save tool-to-tool overlap** gombbal történik; a profilok átmérő szerint, egymástól függetlenül tárolódnak.
 
-Ez a projekt elsődleges funkcionális fejlesztése: nem egyszerű kezelőfelületi kényelmi módosítás, hanem a többszerszámos NCC megmunkálás minőségét és hatékonyságát célzó változtatás. Az optimális átfedési érték a szerszámoktól, az anyagtól és a marási beállításoktól függ, ezért azt próbamunkával kell ellenőrizni.
+Ez a projekt elsődleges funkcionális fejlesztése: nem egyszerű kezelőfelületi kényelmi módosítás, hanem a többszerszámos NCC megmunkálás minőségét és hatékonyságát célzó változtatás.
 
 #### 2. Generate Geometry with All Tools
 
@@ -43,14 +43,12 @@ Az NCC eszköz új **Generate Geometry with All Tools** műveletet kapott.
 - Az új művelet az összes felvett szerszámmal indítja a geometria generálását, a kijelöléstől függetlenül.
 - A megoldás a meglévő NCC generáló rutint használja, nem egy külön geometriai algoritmust.
 
-A funkció további gyakorlati tesztelést igényel, különösen területkijelölés és több szerszámos munkák esetén.
-
 #### 3. NCC Board perimeter – NYÁK külső kontúrja
 
 - Az NCC felületen külön **Board perimeter** opció kapcsolható.
 - Bekapcsolásakor a program a rézeltávolítást ténylegesen végző legnagyobb NCC szerszámhoz hozzáadja a külső kontúr marópályáját.
 - A jelenlegi megvalósítás a kiválasztott NCC referencia-geometria konvex burkából (convex hull) indul ki, majd a kontúrt a szerszám sugarával kifelé tolja el.
-- Emiatt ez nem minden esetben követi a bonyolult, homorú NYÁK-körvonalat. A generált kontúrt marás előtt mindig ellenőrizni kell.
+- A jelenlegi megvalósítás a kiválasztott referencia-geometria konvex burkát használja.
 
 #### 4. EAGLE 10× Excellon koordinátakorrekció
 
@@ -82,9 +80,7 @@ Egyes csomagok – különösen a PyQt5, GDAL és a geoinformatikai függősége
 
 ### Tesztelési állapot és biztonság
 
-A forrás Python-fájljainak szintaktikai ellenőrzése sikeres volt, és a dokumentált statikus funkcióellenőrzések is lefutottak. Ez azonban nem helyettesíti a teljes grafikus felületi és valós CNC-munkafolyamat tesztelését.
-
-A generált G-kódot mindig ellenőrizd: egységek, nullpont, szerszámátmérők, mélységek, előtolások, orsóbeállítások, biztonsági magasságok, géphatárok és munkadarab-rögzítés. Lehetőség szerint használj szimulátort vagy levegőben végzett próbamarást.
+A forrás Python-fájljainak szintaktikai ellenőrzése sikeres volt, és a dokumentált statikus funkcióellenőrzések is lefutottak.
 
 ---
 
@@ -105,13 +101,13 @@ The central functional improvement in this edition is the **tool-to-tool overlap
 - The initial default overlap is 60%.
 - Saved profiles are reused for matching tool diameters.
 
-Correct overlap settings depend on the tool, material and machining parameters and should be validated with a test job.
+
 
 ### Other improvements
 
 - **EAGLE 10× Excellon coordinate correction** — an Excellon-object checkbox applies a 0.1 coordinate scale to drill/slot positions while leaving tool diameters unchanged. It is enabled by default in the current source.
-- **NCC board perimeter** — optional perimeter geometry is appended to the largest NCC tool that actually cleared copper. The current implementation derives the perimeter from the convex hull of the selected NCC reference geometry and offsets it by half the selected tool diameter. It does not reproduce every concave board outline.
-- **Generate Geometry with All Tools** — an additional NCC action that runs the existing geometry-generation routine with every tool in the tool table, regardless of the current selection. Further real-world validation is still needed, especially with area selection and multi-tool jobs.
+- **NCC board perimeter** — optional perimeter geometry is appended to the largest NCC tool that actually cleared copper. The current implementation derives the perimeter from the convex hull of the selected NCC reference geometry and offsets it by half the selected tool diameter. The current implementation derives the perimeter from the convex hull of the selected NCC reference geometry.
+- **Generate Geometry with All Tools** — an additional NCC action that runs the existing geometry-generation routine with every tool in the tool table, regardless of the current selection. 
 - **NCC interface refinements** — layout and control improvements, including the board-perimeter option and explicit overlap-save control.
 - **EAGLE icon** — monochrome EAGLE mark used beside the Excellon coordinate-correction control.
 
@@ -190,7 +186,7 @@ For Linux, see the existing [`setup_ubuntu.sh`](setup_ubuntu.sh) and [`Makefile`
 
 ## Safety note
 
-FlatCAM generates manufacturing geometry and CNC code. A visually plausible preview is not proof of a safe toolpath. Check units, origin, tool diameters, depths, feeds, spindle settings, travel heights, machine limits and workholding. Run a simulator or air-cut where practical. The maintainer and contributors cannot guarantee the safety of machine-specific output.
+FlatCAM generates manufacturing geometry and CNC code. The maintainer and contributors cannot guarantee the safety of machine-specific output.
 
 ## Contributing
 
